@@ -2,4 +2,13 @@
 
 <PageTitle>Index</PageTitle>
 
-<MyCanvas/>
+<MainPage/>
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        Console.WriteLine("IsBrowser:{0}", OperatingSystem.IsBrowser());
+
+        return base.OnInitializedAsync();
+    }
+}

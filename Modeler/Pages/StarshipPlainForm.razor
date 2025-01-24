@@ -1,0 +1,72 @@
+﻿@using System.Linq.Expressions
+
+@RenderForm()
+
+@code {
+    [Inject]
+    public ILogger<StarshipPlainForm>? Logger { get; set; }
+    
+    public class Starship
+    {
+        public string? Id { get; set; }
+    }
+
+    private Starship? _starship { get; set; }
+    
+    private EditContext? _editContext;
+    
+    private Expression<Func<string>>? _idExpression;
+    
+    private EventCallback<string> ValueChanged { get; set; }
+    
+    private EventCallback<EditContext> OnSubmit { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // 初始化 _starship 实例
+        _starship ??= new Starship { Id = "SKY-001" };
+
+        // 创建编辑上下文
+        _editContext = new EditContext(_starship);
+
+        // 设置绑定表达式
+        _idExpression = () => _starship!.Id!;
+
+        ValueChanged = EventCallback.Factory.Create<string>(this, value => _starship!.Id = value);
+
+        OnSubmit = EventCallback.Factory.Create<EditContext>(this, () => Logger.LogInformation("Starship Id = {Id}", _starship?.Id));
+    }
+
+    public RenderFragment RenderForm()
+    {
+        int sequence = 0;
+
+        return builder =>
+        {
+            // 创建 EditForm 组件
+            builder.OpenComponent<EditForm>(sequence++);
+            builder.AddAttribute(sequence++, "EditContext", _editContext);
+            builder.AddAttribute(sequence++, "OnSubmit", OnSubmit);
+
+            // 创建 ChildContent 渲染块
+            builder.AddAttribute(sequence++, "ChildContent", (RenderFragment<EditContext>)(context => tempBuilder =>
+            {
+                // 创建 InputText 组件绑定 Starship.Id
+                tempBuilder.OpenComponent<InputText>(sequence++);
+                tempBuilder.AddAttribute(sequence++, "Value", _starship?.Id);
+                tempBuilder.AddAttribute(sequence++, "ValueChanged", ValueChanged);
+                tempBuilder.AddAttribute(sequence++, "ValueExpression", _idExpression);
+
+                // 关闭 InputText 组件
+                tempBuilder.CloseComponent();
+
+                // 添加提交按钮
+                tempBuilder.AddMarkupContent(sequence++, "\r\n    ");
+                tempBuilder.AddMarkupContent(sequence++, "<button type=\"submit\">Submit</button>");
+            }));
+
+            // 关闭 EditForm 组件
+            builder.CloseComponent();
+        };
+    }
+}

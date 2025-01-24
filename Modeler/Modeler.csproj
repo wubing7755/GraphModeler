@@ -12,4 +12,8 @@
     <PackageReference Include="SkiaSharp.Views.Blazor" Version="2.88.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\scripts\" />
+  </ItemGroup>
+
 </Project>
